@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <ctype.h>
+
+EXEC SQL BEGIN DECLARE SECTION;
+short int articulo_id;
+char articulo_desc[100];
+char matricula[8];
+
+EXEC SQL END DECLARE SECTION;
+
+EXEC SQL WHENEVER SQLERROR SQLPRINT;
+EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
+void clearS(){
+  system("cls||clear");
+}
+
+bool validarMatricula(char matricula[8]){
+// NO VALIDA MATRICULAS ESPECIALES
+  bool debbug = false;
+  bool flag = true;
+  for (int i = 0; i < 8; i++){
+    if (i < 3){
+      if (!(matricula[i] >= 'A' && matricula[i] <= 'S')){
+        if (debbug){
+          printf("\n\nDEBBUG# Value: %d", i);
+          printf("\nDEBBUG# flag1");
+        }
+        flag = false;
+        break;
+      }
+    }
+    else if (i == 3){
+      if (matricula[i] != '-'){
+        if (debbug){
+          printf("\n\nDEBBUG# Value: %d", i);
+          printf("\nDEBBUG# flag2");
+        }
+        flag = false;
+        break;
+      }
+    }
+    else if (i > 3 && i < 7){
+      if (!(matricula[i] >= '0' && matricula[i] <= '9')){
+        if (debbug){
+          printf("\n\nDEBBUG# Value: %d", i);
+          printf("\nDEBBUG# flag3");
+        }
+        flag = false;
+        break;
+      }
+    }
+    else if (i == 7){
+      if(!(matricula[i] >= '0' && matricula[i] <= '9') && !(matricula[i] == 0)){
+        if (debbug){
+          printf("\n\nDEBBUG# Value: %d", i);
+          printf("\nDEBBUG# flag4");
+        }
+        flag = false;
+        break;
+      }
+    }
+  }
+  if (!flag){
+    printf("\n\t\tHa ingresado la matricula incorrectamente");
+    printf("\n\t\tDebe ingresar la matricula con el siguiente formato 'LLL-NNN' o 'LLL-NNNN'");
+    printf("\n\t\tSiendo L una letra mayuscula valida (A-S) y N un caracter numerico, separando estas con un guion\n");
+    return false;
+  }else{
+    return true;
+  }
+}
+
+main(){
+  if (sqlca.sqlcode != 0){
+    printf("TIPO DE ERROR: %d\n", sqlca.sqlcode);
+    printf("MENSAJE:%s\n", sqlca.sqlerrm.sqlerrmc);
+  }
+  // PRUEBA DE FUNCION validarMatricula 
+  // for (int i = 0; i < 10; i++){
+  //   printf("\n\nIngrese MATRICULA con el siguiente formato 'LLL-NNN' o 'LLL-NNNN'");
+  //   printf("\nSiendo L una letra mayuscula y N un caracter numerico, separando estas con un guion\n");
+  //   printf("\t\t---> ");
+  //   scanf("%s", matricula);
+  //   if (validarMatricula(matricula)){
+  //     printf("\nMatricula valida\n\n");
+  //   }
+  //   printf("\nPresiona para continuar...\n\n");
+  //   getchar();
+  //   getchar();
+  //   clearS();
+  // }
+
+  y
+
+  EXEC SQL CONNECT TO lab02 @localhost : 5432 USER postgres;
+
+  EXEC SQL DISCONNECT ALL;
+}
