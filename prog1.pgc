@@ -8,6 +8,8 @@ EXEC SQL BEGIN DECLARE SECTION;
 short int articulo_id;
 char articulo_desc[100];
 char matricula[8];
+int id_venta_enterada, valor_entrada, valor1;
+bool valido;
 
 EXEC SQL END DECLARE SECTION;
 
@@ -19,85 +21,83 @@ void clearS(){
   system("cls||clear");
 }
 
-bool validarMatricula(char matricula[8]){
-// NO VALIDA MATRICULAS ESPECIALES
-  bool debbug = false;
-  bool flag = true;
-  for (int i = 0; i < 8; i++){
-    if (i < 3){
-      if (!(matricula[i] >= 'A' && matricula[i] <= 'S')){
-        if (debbug){
-          printf("\n\nDEBBUG# Value: %d", i);
-          printf("\nDEBBUG# flag1");
-        }
-        flag = false;
-        break;
-      }
-    }
-    else if (i == 3){
-      if (matricula[i] != '-'){
-        if (debbug){
-          printf("\n\nDEBBUG# Value: %d", i);
-          printf("\nDEBBUG# flag2");
-        }
-        flag = false;
-        break;
-      }
-    }
-    else if (i > 3 && i < 7){
-      if (!(matricula[i] >= '0' && matricula[i] <= '9')){
-        if (debbug){
-          printf("\n\nDEBBUG# Value: %d", i);
-          printf("\nDEBBUG# flag3");
-        }
-        flag = false;
-        break;
-      }
-    }
-    else if (i == 7){
-      if(!(matricula[i] >= '0' && matricula[i] <= '9') && !(matricula[i] == 0)){
-        if (debbug){
-          printf("\n\nDEBBUG# Value: %d", i);
-          printf("\nDEBBUG# flag4");
-        }
-        flag = false;
-        break;
-      }
-    }
+int intValido(){
+  int valor1;
+  bool valido = false;
+  do {
+  if (scanf("%d", &valor1) == 1) {
+      valido = true;
+  } else {
+    clearS();
+    printf("\nDebe ingresar un número entero válido. Inténtelo nuevamente.");
+    printf("\n----------------------------------------------------------");
+    printf("\n\n\t--> ");
+    while (getchar() != '\n');
   }
-  if (!flag){
-    printf("\n\t\tHa ingresado la matricula incorrectamente");
-    printf("\n\t\tDebe ingresar la matricula con el siguiente formato 'LLL-NNN' o 'LLL-NNNN'");
-    printf("\n\t\tSiendo L una letra mayuscula valida (A-S) y N un caracter numerico, separando estas con un guion\n");
-    return false;
-  }else{
-    return true;
-  }
+  } while (!valido);
+  return valor1;
+}
+int ventaEntrada(){
+    clearS();
+    printf("\nHa accedido al registro de una nueva entrada");
+    printf("\n----------------------------------------------------------");
+    int opcion;
+    do {
+        printf("\n\nEl visitante es menor de edad?");
+        printf("\n\t1 - SI");
+        printf("\n\t2 - NO\n\n\t--> ");
+        opcion = intValido();
+        if (opcion != 1 && opcion != 2) {
+            printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
+            getchar();
+            getchar();
+            clearS();
+        }
+    } while (opcion != 1 && opcion != 2);
+    if (opcion == 1)
+    {
+        int id_venta_enterada;
+        EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+        EXEC SQL INSERT INTO venta DEFAULT VALUES;
+        EXEC SQL SELECT MAX(id) INTO :id_venta_enterada FROM venta;
+        EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true);
+        EXEC SQL COMMIT;
+        EXEC SQL DISCONNECT ALL;
+        printf("\n\nEntrada registrada correctamente.");
+        printf("\n----------------------------------------------------------");
+        printf("\nPresiona para continuar...\n\n");
+        getchar();
+        getchar();
+        clearS();
+    }
+    if (opcion == 2)
+    {
+        int id_venta_enterada, valor_entrada;
+        printf("\nIngrese el valor de la entrada: ");
+        valor_entrada = intValido();
+        EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+        EXEC SQL INSERT INTO venta(valor) VALUES (:valor_entrada);
+        EXEC SQL SELECT MAX(id) INTO :id_venta_enterada FROM venta;
+        EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, false);
+        EXEC SQL COMMIT;
+        EXEC SQL DISCONNECT ALL;
+        printf("\n\nEntrada registrada correctamente.");
+        printf("\n----------------------------------------------------------");
+        printf("\nPresiona para continuar...\n\n");
+        getchar();
+        getchar();
+        clearS();
+    }
+    return 0;
 }
 
-main(){
+int main(){
   if (sqlca.sqlcode != 0){
     printf("TIPO DE ERROR: %d\n", sqlca.sqlcode);
     printf("MENSAJE:%s\n", sqlca.sqlerrm.sqlerrmc);
   }
-  // PRUEBA DE FUNCION validarMatricula 
-  // for (int i = 0; i < 10; i++){
-  //   printf("\n\nIngrese MATRICULA con el siguiente formato 'LLL-NNN' o 'LLL-NNNN'");
-  //   printf("\nSiendo L una letra mayuscula y N un caracter numerico, separando estas con un guion\n");
-  //   printf("\t\t---> ");
-  //   scanf("%s", matricula);
-  //   if (validarMatricula(matricula)){
-  //     printf("\nMatricula valida\n\n");
-  //   }
-  //   printf("\nPresiona para continuar...\n\n");
-  //   getchar();
-  //   getchar();
-  //   clearS();
-  // }
 
-  y
+  ventaEntrada();
 
-  EXEC SQL CONNECT TO lab02 @localhost : 5432 USER postgres;
-
-  EXEC SQL DISCONNECT ALL;
+  return 0;
 }
