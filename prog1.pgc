@@ -8,7 +8,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 short int articulo_id;
 char articulo_desc[100];
 char matricula[8];
-int id_venta_enterada, valor_entrada, valor1;
+int id_venta_enterada, valor_entrada, valor1, val_elec;
 bool valido;
 
 EXEC SQL END DECLARE SECTION;
@@ -16,6 +16,11 @@ EXEC SQL END DECLARE SECTION;
 EXEC SQL WHENEVER SQLERROR SQLPRINT;
 EXEC SQL WHENEVER SQLWARNING SQLPRINT;
 EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
+void limpiarUltimaLineas(int num) {
+    printf("\033[%dA", num);
+    printf("\033[0J");
+}
 
 void clearS(){
   system("cls||clear");
@@ -28,7 +33,7 @@ int intValido(){
   if (scanf("%d", &valor1) == 1) {
       valido = true;
   } else {
-    clearS();
+    limpiarUltimaLineas(5);
     printf("\nDebe ingresar un número entero válido. Inténtelo nuevamente.");
     printf("\n----------------------------------------------------------");
     printf("\n\n\t--> ");
@@ -37,6 +42,7 @@ int intValido(){
   } while (!valido);
   return valor1;
 }
+
 int ventaEntrada(){
     clearS();
     printf("\nHa accedido al registro de una nueva entrada");
@@ -45,7 +51,7 @@ int ventaEntrada(){
     do {
         printf("\n\nEl visitante es menor de edad?");
         printf("\n\t1 - SI");
-        printf("\n\t2 - NO\n\n\t--> ");
+        printf("\n\t2 - NO\n\n\n\n\n\n\t--> ");
         opcion = intValido();
         if (opcion != 1 && opcion != 2) {
             printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
@@ -59,7 +65,7 @@ int ventaEntrada(){
         int id_venta_enterada;
         EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
         EXEC SQL INSERT INTO venta DEFAULT VALUES;
-        EXEC SQL SELECT MAX(id) INTO :id_venta_enterada FROM venta;
+        EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada;
         EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true);
         EXEC SQL COMMIT;
         EXEC SQL DISCONNECT ALL;
@@ -72,12 +78,35 @@ int ventaEntrada(){
     }
     if (opcion == 2)
     {
-        int id_venta_enterada, valor_entrada;
-        printf("\nIngrese el valor de la entrada: ");
-        valor_entrada = intValido();
+        int id_venta_enterada, valor_entrada, val_elec;
+        limpiarUltimaLineas(10);
+        do {
+        printf("\nQue precio quiere asignarle?");
+        printf("\n\t1 - Recomendado ($350)");
+        printf("\n\t2 - Otro (Ingresar)\n\n\n\n\n\n\t--> ");
+        val_elec = intValido();
+        if (val_elec != 1 && val_elec != 2) {
+            printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
+            getchar();
+            getchar();
+            clearS();
+        }
+        } while (val_elec != 1 && val_elec != 2);
+
+        switch (val_elec)
+        {
+        case 1:
+            valor_entrada = 350;
+            break;
+        case 2:
+            printf("\nIngrese el valor de la entrada: ");
+            valor_entrada = intValido();
+        default:
+            break;
+        }
         EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
         EXEC SQL INSERT INTO venta(valor) VALUES (:valor_entrada);
-        EXEC SQL SELECT MAX(id) INTO :id_venta_enterada FROM venta;
+        EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada;
         EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, false);
         EXEC SQL COMMIT;
         EXEC SQL DISCONNECT ALL;
