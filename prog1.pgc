@@ -8,8 +8,9 @@ EXEC SQL BEGIN DECLARE SECTION;
 short int articulo_id;
 char articulo_desc[100];
 char matricula[8];
-int id_venta_enterada, valor_entrada, valor1, val_elec;
-bool valido;
+int id_venta_enterada, valor_entrada, valor1, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
+id_venta_articulo;
+bool valido, validId, validCant;
 
 EXEC SQL END DECLARE SECTION;
 
@@ -30,10 +31,9 @@ int intValido(){
   int valor1;
   bool valido = false;
   do {
-  if (scanf("%d", &valor1) == 1) {
+  if ((scanf("%d", &valor1) == 1) && valor1 > 0) {
       valido = true;
   } else {
-    limpiarUltimaLineas(5);
     printf("\nDebe ingresar un número entero válido. Inténtelo nuevamente.");
     printf("\n----------------------------------------------------------");
     printf("\n\n\t--> ");
@@ -51,7 +51,7 @@ int ventaEntrada(){
     do {
         printf("\n\nEl visitante es menor de edad?");
         printf("\n\t1 - SI");
-        printf("\n\t2 - NO\n\n\n\n\n\n\t--> ");
+        printf("\n\t2 - NO\n\t--> ");
         opcion = intValido();
         if (opcion != 1 && opcion != 2) {
             printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
@@ -83,7 +83,7 @@ int ventaEntrada(){
         do {
         printf("\nQue precio quiere asignarle?");
         printf("\n\t1 - Recomendado ($350)");
-        printf("\n\t2 - Otro (Ingresar)\n\n\n\n\n\n\t--> ");
+        printf("\n\t2 - Otro (Ingresar)\n\n\t--> ");
         val_elec = intValido();
         if (val_elec != 1 && val_elec != 2) {
             printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
@@ -120,13 +120,100 @@ int ventaEntrada(){
     return 0;
 }
 
+int ventaArticulo(){
+  int idarticulo = -1;
+  int cantidadVenta = 0;
+  int precioUni = 0;
+  int precioTotal = 0;
+  bool validId = false;
+  bool validCant;
+  int val_elec, id_venta_articulo;
+  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+  clearS();
+  do
+  {
+    printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+    printf("");
+    if (idarticulo != -1){
+        clearS();
+        printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+        printf("\n\nNo existe dicho articulo, intente nuevamente\n\n\t--> ");
+    }else
+    {
+      printf("\n\nIngrese el identificador del articulo a vender\n\n\t--> ");
+    }
+    idarticulo = intValido();
+    EXEC SQL SELECT sp_existeariculo(:idarticulo) INTO :validId;
+  } while (!validId);
+  clearS();
+  printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese la cantidad a vender\n\n\t--> ");
+  cantidadVenta = intValido();
+  EXEC SQL SELECT sp_existestock(:idarticulo, :cantidadVenta) INTO :validCant;
+  if (!validCant)
+  {
+    EXEC SQL DISCONNECT ALL;
+    printf("\n\nNO EXISTE DICHA CANTIDAD EN STOCK --- SE CANCELA LA VENTA\n");
+    printf("\n----------------------------------------------------------");
+    printf("\nPresiona para continuar...\n\n");
+    getchar();
+    getchar();
+    return 1;
+  }
+  EXEC SQL SELECT sp_valorarticulo(:idarticulo) INTO :precioUni;
+  precioTotal = precioUni * cantidadVenta;
+  clearS();
+  printf("\n----------------------------------------------------------\n");
+  printf("CONFIRMAR VENTA");
+  printf("\n----------------------------------------------------------\n");
+  printf("ID del Articulo: %d\n", idarticulo);
+  printf("Cantidad a vender: %d\n", cantidadVenta);
+  printf("Precio total: %d\n", precioTotal);
+  printf("\n----------------------------------------------------------\n");
+  printf("\n\t1 - CONFIRMAR");
+  printf("\n\t2 - CANCELAR\n\n\t--> ");
+  val_elec = intValido();
+  do{
+    if (val_elec != 1 && val_elec != 2) {
+      printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
+      getchar();
+      getchar();
+    } 
+  } while (val_elec != 1 && val_elec != 2);
+
+  switch (val_elec)
+  {
+  case 1:
+    EXEC SQL INSERT INTO venta(valor) VALUES (:precioTotal);
+    EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_articulo;
+    EXEC SQL INSERT INTO ventaarticulo (idventa, idarticulo, cantidad) VALUES (:id_venta_articulo, :idarticulo, :cantidadVenta);
+    EXEC SQL COMMIT;
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+    break;
+  case 2:
+    printf("\n\nSE CANCELA LA VENTA\n");
+    printf("Enter para continuar...");
+    getchar();
+    getchar();
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+  default:
+    break;
+  }
+
+
+  return 0;
+  EXEC SQL DISCONNECT ALL; 
+}
+
 int main(){
   if (sqlca.sqlcode != 0){
     printf("TIPO DE ERROR: %d\n", sqlca.sqlcode);
     printf("MENSAJE:%s\n", sqlca.sqlerrm.sqlerrmc);
   }
 
-  ventaEntrada();
-
+//   ventaEntrada();
+  ventaArticulo();
   return 0;
 }
