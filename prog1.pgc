@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <ctype.h>
 
 EXEC SQL BEGIN DECLARE SECTION;
-short int articulo_id;
+char articulo_nombre[50];
 char articulo_desc[100];
-char matricula[8];
 int id_venta_enterada, valor_entrada, valor1, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
-id_venta_articulo;
+id_venta_articulo, cant;
 bool valido, validId, validCant;
 
 EXEC SQL END DECLARE SECTION;
@@ -133,7 +133,6 @@ int ventaArticulo(){
   do
   {
     printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
-    printf("");
     if (idarticulo != -1){
         clearS();
         printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
@@ -152,12 +151,12 @@ int ventaArticulo(){
   EXEC SQL SELECT sp_existestock(:idarticulo, :cantidadVenta) INTO :validCant;
   if (!validCant)
   {
-    EXEC SQL DISCONNECT ALL;
     printf("\n\nNO EXISTE DICHA CANTIDAD EN STOCK --- SE CANCELA LA VENTA\n");
     printf("\n----------------------------------------------------------");
     printf("\nPresiona para continuar...\n\n");
     getchar();
     getchar();
+    EXEC SQL DISCONNECT ALL;
     return 1;
   }
   EXEC SQL SELECT sp_valorarticulo(:idarticulo) INTO :precioUni;
@@ -180,7 +179,6 @@ int ventaArticulo(){
       getchar();
     } 
   } while (val_elec != 1 && val_elec != 2);
-
   switch (val_elec)
   {
   case 1:
@@ -201,11 +199,170 @@ int ventaArticulo(){
   default:
     break;
   }
-
-
-  return 0;
-  EXEC SQL DISCONNECT ALL; 
 }
+
+int registroReposicion(int OptId){
+  int idarticulo = -1, precioTotal, cant;
+  bool validId = false;
+  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+  clearS();
+  if (OptId < 0){
+    do
+    {
+      printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+      if (idarticulo != -1){
+          clearS();
+          printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+          printf("\n\nNo existe dicho articulo, intente nuevamente\n\n\t--> ");
+      }else
+      {
+        printf("\n\nIngrese el identificador del articulo a reponer\n\n\t--> ");
+      }
+      idarticulo = intValido();
+      EXEC SQL SELECT sp_existeariculo(:idarticulo) INTO :validId;
+    } while (!validId);
+  }else{
+    idarticulo = OptId;
+  }
+  clearS();
+  printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese la cantidad a reponer\n\n\t--> ");
+  cant = intValido();
+  clearS();
+  printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese el costo de la compra\n\n\t--> ");
+  precioTotal = intValido();
+  clearS();
+  printf("\n----------------------------------------------------------\n");
+  printf("CONFIRMAR REPOSICION");
+  printf("\n----------------------------------------------------------\n");
+  printf("Identificador del articulo: %d\n", idarticulo);
+  printf("Cantidad a reponer: %d\n", cant);
+  printf("Precio total: %d\n", precioTotal);
+  printf("\n----------------------------------------------------------\n");
+  printf("\n\t1 - CONFIRMAR");
+  printf("\n\t2 - CANCELAR\n\n\t--> ");
+  val_elec = intValido();
+  do{
+    if (val_elec != 1 && val_elec != 2) {
+      printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
+      getchar();
+      getchar();
+    } 
+  } while (val_elec != 1 && val_elec != 2);
+  switch (val_elec)
+  {
+  case 1:
+    EXEC SQL SELECT sp_reposicion(:idarticulo, :cant, :precioTotal);
+    EXEC SQL COMMIT;
+    EXEC SQL DISCONNECT ALL;
+    limpiarUltimaLineas(1);
+    return 0;
+    break;
+  case 2:
+    printf("\n\nSE CANCELA EL REGISTRO\n");
+    printf("Enter para continuar...");
+    getchar();
+    getchar();
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+  default:
+    break;
+  }
+
+}
+
+int altaArticulo(){
+  int idarticulo;
+  char articulo_nombre[50];
+  char articulo_desc[100];
+  int precioUni = 0;
+  int val_elec;
+  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+  clearS();
+  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese el nombre del articulo\n\n\t--> ");
+  do
+  {
+    if (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n'){
+      clearS();
+      printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+      printf("\n\nLa longitud del nombre es demasiado larga, intente nuevamente\n\n\t--> ");
+      if (strlen(articulo_nombre) == 50 - 1) {
+      int c;
+      while ((c = getchar()) != '\n' && c != EOF) {}
+    }
+    }
+    fgets(articulo_nombre, sizeof(articulo_nombre), stdin);
+  } while (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n');
+  clearS();
+  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese la descripcion del articulo\n\n\t--> ");
+  do
+  {
+    if (strlen(articulo_desc) == 100 - 1 && articulo_desc[100 - 2] != '\n'){
+      clearS();
+      printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+      printf("\n\nLa longitud de la descripcion es demasiado larga, intente nuevamente\n\n\t--> ");
+      if (strlen(articulo_desc) == 100 - 1) {
+      int c;
+      while ((c = getchar()) != '\n' && c != EOF) {}
+    }
+    }
+    fgets(articulo_desc, sizeof(articulo_desc), stdin);
+  } while (strlen(articulo_desc) == 100 - 1 && articulo_desc[100 - 2] != '\n');
+  clearS();
+  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  printf("\n\nIngrese el precio de venta del articulo\n\n\t--> ");
+  precioUni = intValido();
+  clearS();
+  printf("\n----------------------------------------------------------\n");
+  printf("CONFIRMAR ARTICULO");
+  printf("\n----------------------------------------------------------\n");
+  printf("Nombre del articulo: %s\n", articulo_nombre);
+  printf("Descripcion del articulo: %s\n", articulo_desc);
+  printf("Precio de venta: %d\n", precioUni);
+  printf("\n----------------------------------------------------------\n");
+  printf("\n\t1 - CONFIRMAR");
+  printf("\n\t2 - ASIGNAR REPOSICION");
+  printf("\n\t3 - CANCELAR\n\n\t--> ");
+  val_elec = intValido();
+  do{
+    if (val_elec != 1 && val_elec != 2 && val_elec != 3) {
+      printf("\n\nOpción inválida. Por favor, intente nuevamente, Enter para continuar...");
+      getchar();
+      getchar();
+    } 
+  } while (val_elec != 1 && val_elec != 2 && val_elec != 3);
+  switch (val_elec)
+  {
+  case 1:
+    EXEC SQL INSERT INTO articulo(nombre, descripcion, valorventa) VALUES (:articulo_nombre, :articulo_desc, :precioUni);
+    EXEC SQL COMMIT;
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+    break;
+  case 2:
+    EXEC SQL INSERT INTO articulo(nombre, descripcion, valorventa) VALUES (:articulo_nombre, :articulo_desc, :precioUni);
+    EXEC SQL SELECT currval('articulo_id_seq') INTO :idarticulo;
+    EXEC SQL COMMIT;
+    EXEC SQL DISCONNECT ALL;
+    registroReposicion(idarticulo);
+    return 0;
+    break;
+  case 3:
+    printf("\n\nSE CANCELA EL REGISTRO\n");
+    printf("Enter para continuar...");
+    getchar();
+    getchar();
+    EXEC SQL DISCONNECT ALL;
+    return 0;
+
+  default:
+    break;
+  }
+}
+
 
 int main(){
   if (sqlca.sqlcode != 0){
@@ -213,7 +370,9 @@ int main(){
     printf("MENSAJE:%s\n", sqlca.sqlerrm.sqlerrmc);
   }
 
-//   ventaEntrada();
-  ventaArticulo();
+  // ventaEntrada();
+  // ventaArticulo();
+  altaArticulo();
+  // registroReposicion(-1);
   return 0;
 }
