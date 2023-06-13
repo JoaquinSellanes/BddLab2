@@ -8,8 +8,8 @@
 EXEC SQL BEGIN DECLARE SECTION;
 char articulo_nombre[50];
 char articulo_desc[100];
-int id_venta_enterada, valor_entrada, valor1, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
-id_venta_articulo, cant;
+int id_venta_enterada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
+id_venta_articulo, cant, mes, anio;
 bool valido, validId, validCant;
 
 EXEC SQL END DECLARE SECTION;
@@ -28,10 +28,10 @@ void clearS(){
 }
 
 int intValido(){
-  int valor1;
+  int foo;
   bool valido = false;
   do {
-  if ((scanf("%d", &valor1) == 1) && valor1 > 0) {
+  if ((scanf("%d", &foo) == 1) && foo > 0) {
       valido = true;
   } else {
     printf("\nDebe ingresar un número entero válido. Inténtelo nuevamente.");
@@ -40,7 +40,7 @@ int intValido(){
     while (getchar() != '\n');
   }
   } while (!valido);
-  return valor1;
+  return foo;
 }
 
 int ventaEntrada(){
@@ -362,6 +362,54 @@ int altaArticulo(){
   }
 }
 
+int consultarVentas(){
+  int foo;
+  int anio = 0;
+  int mes = 0;
+  clearS();
+  do {
+    printf("\n\t### CONSULTAR VENTAS ##\n----------------------------------------------------------\n");
+    printf("\n\nDe que AÑO quiere realizar la consulta? (2000 - 2050)\n\n\t-->");
+    anio = intValido();
+    if (anio < 2000 || anio > 2050) {
+      printf("\n\nOpción inválida. Por favor, debe ingresar un año valido (2000 - 2050), intente nuevamente.\nEnter para continuar...");
+      getchar();
+      clearS();
+    }
+  } while (( anio < 2000 || anio > 2050) || anio == 0);
+  clearS();
+  do {
+      printf("\n\t### CONSULTAR VENTAS ##\n----------------------------------------------------------\n");
+      printf("\n\nDe que MES quiere realizar la consulta? (1-12)\n\n\t-->");
+      mes = intValido();
+      if (mes > 12) {
+        printf("\n\nOpción inválida. Por favor, debe ingresar un mes valido (1-12), intente nuevamente.\nEnter para continuar...");
+        getchar();
+        clearS();
+      }
+  } while (mes > 12 || mes == 0);
+  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+  EXEC SQL SELECT sp_ventas(:mes, :anio) INTO :foo;
+  EXEC SQL DISCONNECT ALL;
+  if(foo == 0)
+  {
+    printf("\n\nNo se realizaron ventas en el periodo dado");
+    printf("\n----------------------------------------------------------\n");
+    printf("\n\tPresione enter para continuar...");
+    getchar();
+    getchar();
+  }else
+  {
+    printf("\n\nEl total recaudado en ventas es de: $%d", foo);
+    printf("\n----------------------------------------------------------\n");
+    printf("\n\tPresione enter para continuar...");
+    getchar();
+    getchar();
+  }
+  
+  return 0;
+}
+
 int main(){
   if (sqlca.sqlcode != 0){
     printf("TIPO DE ERROR: %d\n", sqlca.sqlcode);
@@ -372,5 +420,6 @@ int main(){
   // ventaArticulo();
   // altaArticulo();
   // registroReposicion(-1);
+  // consultarVentas();
   return 0;
 }
