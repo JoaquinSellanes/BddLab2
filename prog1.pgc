@@ -43,10 +43,25 @@ int intValido(){
   return foo;
 }
 
+void titleVentaEntrada(){
+  printf("\n\t### REGISTRO DE ENTRADA ###\n----------------------------------------------------------\n");
+}
+void titleVentaArticulo(){
+  printf("\n\t### REGISTRO DE VENTA ###\n----------------------------------------------------------\n");
+}
+void titleAltaArticulo(){
+  printf("\n\t### REGISTRO ARTICULO ###\n----------------------------------------------------------\n");
+}
+void titleReposicion(){
+  printf("\n\t### REGISTRO REPOSICION ###\n----------------------------------------------------------\n");
+}
+void titleConsultaVentas(){
+  printf("\n\t### CONSULTAR VENTAS ###\n----------------------------------------------------------\n");
+}
+
 int ventaEntrada(){
     clearS();
-    printf("\nHa accedido al registro de una nueva entrada");
-    printf("\n----------------------------------------------------------");
+    titleVentaEntrada()
     int opcion;
     do {
         printf("\n\nEl visitante es menor de edad?");
@@ -132,10 +147,10 @@ int ventaArticulo(){
   clearS();
   do
   {
-    printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+    titleVentaArticulo();
     if (idarticulo != -1){
         clearS();
-        printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+        titleVentaArticulo();
         printf("\n\nNo existe dicho articulo, intente nuevamente\n\n\t--> ");
     }else
     {
@@ -145,7 +160,7 @@ int ventaArticulo(){
     EXEC SQL SELECT sp_existeariculo(:idarticulo) INTO :validId;
   } while (!validId);
   clearS();
-  printf("\n\t### REGISTRO DE VENTA ##\n----------------------------------------------------------\n");
+  titleVentaArticulo();
   printf("\n\nIngrese la cantidad a vender\n\n\t--> ");
   cantidadVenta = intValido();
   EXEC SQL SELECT sp_existestock(:idarticulo, :cantidadVenta) INTO :validCant;
@@ -209,10 +224,10 @@ int registroReposicion(int OptId){
   if (OptId < 0){
     do
     {
-      printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+      titleReposicion();
       if (idarticulo != -1){
           clearS();
-          printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+          titleReposicion();
           printf("\n\nNo existe dicho articulo, intente nuevamente\n\n\t--> ");
       }else
       {
@@ -225,11 +240,11 @@ int registroReposicion(int OptId){
     idarticulo = OptId;
   }
   clearS();
-  printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+  titleReposicion();
   printf("\n\nIngrese la cantidad a reponer\n\n\t--> ");
   cant = intValido();
   clearS();
-  printf("\n\t### REGISTRO REPOSICION ##\n----------------------------------------------------------\n");
+  titleReposicion();
   printf("\n\nIngrese el costo de la compra\n\n\t--> ");
   precioTotal = intValido();
   clearS();
@@ -279,13 +294,13 @@ int altaArticulo(){
   int val_elec;
   EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
   clearS();
-  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  titleAltaArticulo();
   printf("\n\nIngrese el nombre del articulo\n\n\t--> ");
   do
   {
     if (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n'){
       clearS();
-      printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+      titleAltaArticulo();
       printf("\n\nLa longitud del nombre es demasiado larga, intente nuevamente\n\n\t--> ");
       if (strlen(articulo_nombre) == 50 - 1) {
       int c;
@@ -295,13 +310,13 @@ int altaArticulo(){
     fgets(articulo_nombre, sizeof(articulo_nombre), stdin);
   } while (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n');
   clearS();
-  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  titleAltaArticulo();
   printf("\n\nIngrese la descripcion del articulo\n\n\t--> ");
   do
   {
     if (strlen(articulo_desc) == 100 - 1 && articulo_desc[100 - 2] != '\n'){
       clearS();
-      printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+      titleAltaArticulo();
       printf("\n\nLa longitud de la descripcion es demasiado larga, intente nuevamente\n\n\t--> ");
       if (strlen(articulo_desc) == 100 - 1) {
       int c;
@@ -311,7 +326,7 @@ int altaArticulo(){
     fgets(articulo_desc, sizeof(articulo_desc), stdin);
   } while (strlen(articulo_desc) == 100 - 1 && articulo_desc[100 - 2] != '\n');
   clearS();
-  printf("\n\t### REGISTRO ARTICULO ##\n----------------------------------------------------------\n");
+  titleAltaArticulo();
   printf("\n\nIngrese el precio de venta del articulo\n\n\t--> ");
   precioUni = intValido();
   clearS();
@@ -368,7 +383,7 @@ int consultarVentas(){
   int mes = 0;
   clearS();
   do {
-    printf("\n\t### CONSULTAR VENTAS ##\n----------------------------------------------------------\n");
+    titleConsultaVentas();
     printf("\n\nDe que AÑO quiere realizar la consulta? (2000 - 2050)\n\n\t-->");
     anio = intValido();
     if (anio < 2000 || anio > 2050) {
@@ -379,7 +394,7 @@ int consultarVentas(){
   } while (( anio < 2000 || anio > 2050) || anio == 0);
   clearS();
   do {
-      printf("\n\t### CONSULTAR VENTAS ##\n----------------------------------------------------------\n");
+      titleConsultaVentas();
       printf("\n\nDe que MES quiere realizar la consulta? (1-12)\n\n\t-->");
       mes = intValido();
       if (mes > 12) {
@@ -408,6 +423,10 @@ int consultarVentas(){
   }
   
   return 0;
+}
+
+int menuPrincipal(){
+
 }
 
 int main(){
