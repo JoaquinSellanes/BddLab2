@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION SP_Entradas() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE stock
 	SET stock = stock - 1
-	WHERE idarticulo IN (4, 6);
+	WHERE UPPER(nombre) = UPPER('entrada') OR UPPER(nombre) = UPPER('sticker');
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -87,17 +87,47 @@ EXECUTE FUNCTION SP_AStock();
 
 ---------------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION SP_Reposicion(idrep integer, cant integer, precio integer) RETURNS VOID AS $$
-BEGIN
-	UPDATE stock 
-	SET stock = stock + cant
-	WHERE idarticulo = idrep;
+-- CREATE OR REPLACE FUNCTION SP_Reposicion(idrep integer, cant integer, precio integer) RETURNS VOID AS $$
+-- BEGIN
+-- 	BEGIN TRANSACTION;
+-- 	UPDATE stock 
+-- 	SET stock = stock + cant
+-- 	WHERE idarticulo = idrep;
 
-	INSERT INTO reposicion(idarticulo, costo, cantidad) VALUES (idrep, precio, cant);
-END;
-$$ LANGUAGE plpgsql;
+-- 	INSERT INTO reposicion(idarticulo, costo, cantidad) VALUES (idrep, precio, cant);
+-- 	COMMIT;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 ---------------------------------------------------------------------------------------
 
+CREATE OR REPLACE FUNCTION SP_ActualizarStock() RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE stock
+	SET stock = stock + NEW.cantidad
+	WHERE idarticulo = NEW.idarticulo;
 
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
+CREATE TRIGGER TR_ActualizarStock
+AFTER INSERT ON reposicion
+FOR EACH ROW
+EXECUTE FUNCTION SP_ActualizarStock();
+
+---------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION SP_Ventas(mes integer, anio integer) RETURNS integer AS $$
+DECLARE
+	foo integer := 0;
+BEGIN
+	SELECT SUM(valor) INTO foo
+	FROM venta
+	WHERE EXTRACT(MONTH FROM fecha) = mes
+	AND EXTRACT(YEAR FROM fecha) = anio	
+	AND valor != 0;
+
+RETURN foo;
+END;
+$$ LANGUAGE plpgsql;

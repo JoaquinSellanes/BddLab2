@@ -253,10 +253,9 @@ int registroReposicion(int OptId){
   switch (val_elec)
   {
   case 1:
-    EXEC SQL SELECT sp_reposicion(:idarticulo, :cant, :precioTotal);
+    EXEC SQL INSERT INTO reposicion(idarticulo, costo, cantidad) VALUES (:idarticulo, :precioTotal, :cant);
     EXEC SQL COMMIT;
     EXEC SQL DISCONNECT ALL;
-    limpiarUltimaLineas(1);
     return 0;
     break;
   case 2:
@@ -363,7 +362,6 @@ int altaArticulo(){
   }
 }
 
-
 int main(){
   if (sqlca.sqlcode != 0){
     printf("TIPO DE ERROR: %d\n", sqlca.sqlcode);
@@ -372,7 +370,7 @@ int main(){
 
   // ventaEntrada();
   // ventaArticulo();
-  altaArticulo();
+  // altaArticulo();
   // registroReposicion(-1);
   return 0;
 }
