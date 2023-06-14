@@ -31,8 +31,8 @@ CREATE TABLE venta(
 
 CREATE TABLE ventaEntrada(
     idVenta         INT             NOT NULL,
-    esMenor         BOOLEAN         default true,
-    diaDeLaSemana   VARCHAR(10)     NOT NULL
+    esMenor         BOOLEAN         default true
+    -- diaDeLaSemana   VARCHAR(10)     NOT NULL
 );
 
 CREATE TABLE articulo(
