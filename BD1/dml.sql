@@ -104,7 +104,7 @@ INSERT INTO ventaEntrada (idVenta, esMenor) VALUES (8, false);
 INSERT INTO venta (fecha, valor) VALUES ('2023-05-03', 0);
 INSERT INTO ventaEntrada (idVenta, esMenor) VALUES (9, true);
 INSERT INTO venta (fecha, valor) VALUES ('2023-05-02', 350);
-INSERT INTO ventaEntrada (idVenta, esMenor) VALUES (10, false, 'martes');
+INSERT INTO ventaEntrada (idVenta, esMenor) VALUES (10, false);
 INSERT INTO venta (fecha, valor) VALUES ('2023-05-01', 360);
 INSERT INTO ventaArticulo (idVenta, idArticulo, cantidad) VALUES (11, 7, 2);
 INSERT INTO venta (fecha, valor) VALUES ('2023-04-30', 950);
