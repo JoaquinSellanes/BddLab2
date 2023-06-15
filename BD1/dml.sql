@@ -1,3 +1,8 @@
+INSERT INTO config(elemento, valor_i) VALUES ('id_entrada', 4);
+INSERT INTO config(elemento, valor_i) VALUES ('valor_entrada', 350);
+INSERT INTO config(elemento, valor_i) VALUES ('valor_entrada_menor', 0);
+INSERT INTO config(elemento, valor_i) VALUES ('id_regalo_entrada', 6);
+
 INSERT INTO vehiculos (matricula, marca, modelo, descripcion, anoFabricacion, paisOrigen, color)
 VALUES ('ATR-345', 'Ford', 'Model T', 'Coche de época', 1920, 'Estados Unidos', 'Negro');
 

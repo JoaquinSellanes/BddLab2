@@ -1,5 +1,11 @@
 CREATE DATABASE museo;
 
+CREATE TABLE config(
+	elemento		VARCHAR(64)			PRIMARY KEY,
+	valor_i			INT,
+	valor_s			VARCHAR(32)
+);
+
 CREATE TABLE vehiculos(
     matricula       VARCHAR(8)      NOT NULL,
     marca           VARCHAR(32)     NOT NULL,
