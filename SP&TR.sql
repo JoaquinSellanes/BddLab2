@@ -1,9 +1,14 @@
 
 CREATE OR REPLACE FUNCTION SP_Entradas() RETURNS TRIGGER AS $$
+DECLARE
+    idEntrada integer;
+    idRegalo integer;
 BEGIN
+	SELECT valor_i INTO idEntrada FROM config WHERE elemento = 'id_entrada';
+	SELECT valor_i INTO idRegalo FROM config WHERE elemento = 'id_regalo_entrada';
 	UPDATE stock
 	SET stock = stock - 1
-	WHERE idarticulo IN (4, 6);
+	WHERE idarticulo in (idEntrada, idRegalo);
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -131,3 +136,5 @@ BEGIN
 RETURN foo;
 END;
 $$ LANGUAGE plpgsql;
+
+---------------------------------------------------------------------------------------
