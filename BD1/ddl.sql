@@ -1,7 +1,7 @@
 CREATE DATABASE museo;
 
 CREATE TABLE config(
-	elemento		VARCHAR(64)			PRIMARY KEY,
+	elemento		VARCHAR(64),
 	valor_i			INT,
 	valor_s			VARCHAR(32)
 );
@@ -38,7 +38,6 @@ CREATE TABLE venta(
 CREATE TABLE ventaEntrada(
     idVenta         INT             NOT NULL,
     esMenor         BOOLEAN         default true
-    -- diaDeLaSemana   VARCHAR(10)     NOT NULL
 );
 
 CREATE TABLE articulo(
