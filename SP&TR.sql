@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION SP_Entradas() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE stock
 	SET stock = stock - 1
-	WHERE UPPER(nombre) = UPPER('entrada') OR UPPER(nombre) = UPPER('sticker');
+	WHERE idarticulo IN (4, 6);
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
