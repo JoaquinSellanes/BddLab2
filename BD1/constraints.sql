@@ -1,3 +1,5 @@
+ALTER TABLE config ADD CONSTRAINT pk_config PRIMARY KEY (elemento);
+
 ALTER TABLE vehiculos ADD CONSTRAINT pk_vehiculos PRIMARY KEY (matricula);
 
 ALTER TABLE fotosvehiculos ADD CONSTRAINT pk_fotosVehiculos PRIMARY KEY (matricula, foto);
