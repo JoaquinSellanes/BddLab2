@@ -314,6 +314,7 @@ int altaArticulo(){
     }
     fgets(articulo_nombre, sizeof(articulo_nombre), stdin);
   } while (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n');
+  clearS();
   titleAltaArticulo();
   printf("\n\nIngrese la descripcion del articulo\n\n\t--> ");
   do
