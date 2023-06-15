@@ -464,14 +464,16 @@ int menu() {
     int opcion;
     clearS();
     while (1) {
-        printf("MENU\n");
+        printf("******************************\n");
+        printf("\tMENU PRINCIPAL\n");
+        printf("******************************\n\n");
         printf("1. Venta de entradas\n");
         printf("2. Venta de artículos\n");
         printf("3. Crear articulos\n");
         printf("4. Realizar resposición de artículos\n");
-        printf("5. Obtener el total recaudado (mes o año)\n");
+        printf("5. Obtener el total recaudado (mes/año)\n");
         printf("0. Salir\n");
-        printf("\nIngrese su opción: ");
+        printf("\n\t--> Ingrese su opción: ");
         scanf("%d", &opcion);
 
         switch (opcion) {
@@ -495,14 +497,15 @@ int menu() {
                 consultarVentas();
                 clearS();
                 break;    
+            case 0: 
+                printf("\nSaliendo del programa...\n\n");
+                return 0;
             default:
-                printf("\tOpción inválida. Por favor, seleccione una opción válida.\n");
-                
+                clearS();
+                printf("\nLa opción que ingreso es invalidad. Por favor, intente de nuevo.\n");                       
         }
-
         printf("\n");
-        clearS();
     }
-
     return 0;
 }
+
