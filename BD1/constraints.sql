@@ -10,7 +10,6 @@ ALTER TABLE venta ADD CONSTRAINT pk_venta PRIMARY KEY (id);
 
 ALTER TABLE ventaentrada ADD CONSTRAINT pk_ventaEntrada PRIMARY KEY (idventa);
 ALTER TABLE ventaEntrada ADD CONSTRAINT fk_ventaEntrada FOREIGN KEY (idventa) REFERENCES venta(id);
-ALTER TABLE ventaEntrada ADD CONSTRAINT ck_diaDeLaSemana CHECK (diaDeLaSemana ~* '^(lunes|martes|miercoles|jueves|viernes|sabado|domingo)$');
 
 ALTER TABLE articulo ADD CONSTRAINT pk_articulo PRIMARY KEY (id);
 

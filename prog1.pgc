@@ -430,7 +430,7 @@ int consultarVentas(){
 // menu
 int menu() {
     int opcion;
-clearConsole();
+    clearS();
     while (1) {
         printf("MENU\n");
         printf("1. Venta de entradas\n");
@@ -445,23 +445,23 @@ clearConsole();
         switch (opcion) {
             case 1:
                 ventaEntrada();
-                clearConsole();
+                clearS();
                 break;
             case 2:
                 ventaArticulo();
-                clearConsole();
+                clearS();
                 break;
             case 3:
-                registroReposicion();
-                clearConsole();
+                registroReposicion(-1);
+                clearS();
                 break;
             case 4:
                 altaArticulo();
-                clearConsole();
+                clearS();
                 break;
             case 5:
                 consultarVentas();
-                clearConsole();
+                clearS();
                 break;    
             default:
                 printf("\tOpción inválida. Por favor, seleccione una opción válida.\n");
@@ -469,7 +469,7 @@ clearConsole();
         }
 
         printf("\n");
-        clearConsole();
+        clearS();
     }
 
     return 0;
