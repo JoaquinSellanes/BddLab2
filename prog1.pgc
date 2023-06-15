@@ -295,6 +295,10 @@ int altaArticulo(){
   int val_elec;
   EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
   clearS();
+
+  int c;
+  while ((c = getchar()) != '\n' && c != EOF) {}
+
   titleAltaArticulo();
   printf("\n\nIngrese el nombre del articulo\n\n\t--> ");
   do
@@ -302,7 +306,7 @@ int altaArticulo(){
     if (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n'){
       clearS();
       titleAltaArticulo();
-      printf("\n\nLa longitud del nombre es demasiado larga, intente nuevamente\n\n\t--> ");
+      printf("\n\nLa longitud de la nombre es demasiado larga, intente nuevamente\n\n\t--> ");
       if (strlen(articulo_nombre) == 50 - 1) {
       int c;
       while ((c = getchar()) != '\n' && c != EOF) {}
@@ -310,7 +314,6 @@ int altaArticulo(){
     }
     fgets(articulo_nombre, sizeof(articulo_nombre), stdin);
   } while (strlen(articulo_nombre) == 50 - 1 && articulo_nombre[50 - 2] != '\n');
-  clearS();
   titleAltaArticulo();
   printf("\n\nIngrese la descripcion del articulo\n\n\t--> ");
   do
@@ -452,11 +455,11 @@ int menu() {
                 clearS();
                 break;
             case 3:
-                registroReposicion(-1);
+                altaArticulo();
                 clearS();
                 break;
             case 4:
-                altaArticulo();
+                registroReposicion(-1);
                 clearS();
                 break;
             case 5:
