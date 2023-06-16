@@ -6,19 +6,27 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+// --------------------------------------------------------------------------------------------------------
+//            VARIABLES
+// --------------------------------------------------------------------------------------------------------
 EXEC SQL BEGIN DECLARE SECTION;
 char articulo_nombre[50];
-char articulo_desc[100];
+char articulo_desc[100];0
 int id_venta_enterada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
 id_venta_articulo, cant, mes, anio;
 bool valido, validId, validCant;
-
 EXEC SQL END DECLARE SECTION;
+
+// --------------------------------------------------------------------------------------------------------
+//            CAPTURA DE ERRORES SQL
+// --------------------------------------------------------------------------------------------------------
 
 EXEC SQL WHENEVER SQLERROR SQLPRINT;
 EXEC SQL WHENEVER SQLWARNING SQLPRINT;
 EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+// --------------------------------------------------------------------------------------------------------
+//            FIRMAS
 // --------------------------------------------------------------------------------------------------------
 
 void limpiarUltimaLineas(int num);
@@ -33,13 +41,15 @@ void titleVentaArticulo();
 void titleAltaArticulo();
 void titleReposicion();
 void titleConsultaVentas();
-int ventaEntrada();
+int ventaEntrada();                     // 🛑
 int ventaArticulo();
 int registroReposicion(int OptId);
 int altaArticulo();
-int consultarVentas();
+int consultarVentas();                  // 🛑
 int menu();
 
+// --------------------------------------------------------------------------------------------------------
+//            MAIN
 // --------------------------------------------------------------------------------------------------------
 
 int main(){
@@ -48,33 +58,46 @@ int main(){
     printf("MENSAJE:%s\n", sqlca.sqlerrm.sqlerrmc);
   }
   menu();
-  // ventaEntrada();
-  // ventaArticulo();
-  // altaArticulo();
-  // registroReposicion(-1);
-  // consultarVentas();
   return 0;
 }
 
+// --------------------------------------------------------------------------------------------------------
+//            METODOS
+// --------------------------------------------------------------------------------------------------------
+
+// Funcion para conectar conla base de datos.
+void conectar(){
+  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+}
+
+// Funcion para desconectar todas las conecciones conla base de datos.
+void desconectar(){
+  EXEC SQL DISCONNECT ALL;
+}
+
+// Funcion para limpiar el buffer de memoria del teclado, normalmente usado cuando se utiliza fgets.
 void limpiarBuffer(){
   int c;
   while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
+// Funcion para limpiar las ultimas n lineas de la consola, utilizada con fines esteticos
 void limpiarUltimaLineas(int num) {
     printf("\033[%dA", num);
     printf("\033[0J");
 }
 
+// Funcion para limpiar pantalla.
 void clearS(){
   system("cls||clear");
 }
 
+// Devuelve un entero, pidiendo el input del usuario hasta que este ingrese un entero que nosea negativo
 int intValido(){
   int foo;
   bool valido = false;
   do {
-  if ((scanf("%d", &foo) == 1) && foo > 0) {
+  if ((scanf("%d", &foo) == 1) && foo >= 0) {
       valido = true;
   } else {
     printf("\nDebe ingresar un número entero válido. Inténtelo nuevamente.");
@@ -86,14 +109,7 @@ int intValido(){
   return foo;
 }
 
-void conectar(){
-  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
-}
-
-void desconectar(){
-  EXEC SQL DISCONNECT ALL;
-}
-
+// Funcion que espera hasta que el usuario ingrese un enter
 void esperarEnter(){
   printf("\nPresionar ENTER para continuar...");
   getchar();
@@ -101,25 +117,34 @@ void esperarEnter(){
   clearS();
 }
 
+// Titulo de la funcion venta entrada
 void titleVentaEntrada(){
   printf("\n\t### REGISTRO DE ENTRADA ###\n----------------------------------------------------------\n");
 }
+// Titulo de la funcion de registro de venta
 void titleVentaArticulo(){
   printf("\n\t### REGISTRO DE VENTA ###\n----------------------------------------------------------\n");
 }
+// Titulo de la funcion de registro de articulo
 void titleAltaArticulo(){
   printf("\n\t### REGISTRO ARTICULO ###\n----------------------------------------------------------\n");
 }
+// Titulo de la funcion de registro de reposicion
 void titleReposicion(){
   printf("\n\t### REGISTRO REPOSICION ###\n----------------------------------------------------------\n");
 }
+// Titulo de la funcion Consultas de ventas 🛑🛑🛑🛑🛑🛑🛑
 void titleConsultaVentas(){
   printf("\n\t### CONSULTAR VENTAS ###\n----------------------------------------------------------\n");
 }
 
+
+// Funcion que permite la venta de entradas incluyendo el registro del artículo de regalo
 int ventaEntrada(){
     clearS();
     titleVentaEntrada();
+
+    // Pedimos la opcion de si el visitante es menor de edad o es mayor y es necesario cobrarle
     int opcion;
     do {
         printf("\n\nEl visitante es menor de edad?");
@@ -131,24 +156,30 @@ int ventaEntrada(){
             esperarEnter();
         }
     } while (opcion != 1 && opcion != 2);
+
+    // Si el visitante es menor de edad
     if (opcion == 1)
-    {
-        int id_venta_enterada;
-        conectar();
-        EXEC SQL INSERT INTO venta DEFAULT VALUES;
-        EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada;
-        EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true);
-        EXEC SQL COMMIT;
-        desconectar();
-        printf("\n\nEntrada registrada correctamente.");
-        printf("\n----------------------------------------------------------");
-        esperarEnter();
-        clearS();
+    {  
+      // Creamos el registro de venta y venta entrada para un visitantemenor de edad
+      int id_venta_enterada;
+      conectar();
+      EXEC SQL INSERT INTO venta DEFAULT VALUES; // 🛑
+      EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada; // 🛑
+      EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true); // 🛑
+      EXEC SQL COMMIT; // 🛑     
+      desconectar();
+      printf("\n\nEntrada registrada correctamente.");
+      printf("\n----------------------------------------------------------");
+      esperarEnter();
+      clearS();
     }
+
+    // Si el visitante es mayor de edad
     if (opcion == 2)
     {
         int id_venta_enterada, valor_entrada, val_elec;
         limpiarUltimaLineas(10);
+        // Pedimos que ingrese lo que se le va a cobrar al visitante
         do {
         printf("\nQue precio quiere asignarle?");
         printf("\n\t1 - Recomendado ($350)");
@@ -171,6 +202,7 @@ int ventaEntrada(){
         default:
             break;
         }
+        // Una vez con el valor a combrar procedemos a realizar la operaciones necesarias para registrar la venta y la venta entrada
         conectar();
         EXEC SQL INSERT INTO venta(valor) VALUES (:valor_entrada);
         EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada;
@@ -185,6 +217,7 @@ int ventaEntrada(){
     return 0;
 }
 
+// Funcion que permite la venta de artículos de la tienda (tazas, lapiceras, llaveros, etc)
 int ventaArticulo(){
   int idarticulo = -1;
   int cantidadVenta = 0;
@@ -195,6 +228,7 @@ int ventaArticulo(){
   int val_elec, id_venta_articulo;
   conectar();
   clearS();
+  // Pedimos el identificador del articulo que se quiera vender y comprobamos que este exista en nuestros registros
   do
   {
     titleVentaArticulo();
@@ -210,6 +244,8 @@ int ventaArticulo(){
     EXEC SQL SELECT sp_existeariculo(:idarticulo) INTO :validId;
   } while (!validId);
   clearS();
+
+  // Pedimos la cantidad a vender y comprobamos que exista el stock anecesario para la cantidad solicitada
   titleVentaArticulo();
   printf("\n\nIngrese la cantidad a vender\n\n\t--> ");
   cantidadVenta = intValido();
@@ -222,9 +258,16 @@ int ventaArticulo(){
     desconectar();
     return 1;
   }
+
+  // Generamos una consulta q devuelva el precio unitario del articulo a vender
   EXEC SQL SELECT sp_valorarticulo(:idarticulo) INTO :precioUni;
+
+  // Calculamos el monto total de la venta
   precioTotal = precioUni * cantidadVenta;
+
   clearS();
+
+  // Pedimos la confirmacion de la venta 
   printf("\n----------------------------------------------------------\n");
   printf("CONFIRMAR VENTA");
   printf("\n----------------------------------------------------------\n");
@@ -243,14 +286,16 @@ int ventaArticulo(){
   } while (val_elec != 1 && val_elec != 2);
   switch (val_elec)
   {
+    // En caso de confirmal la venta registramos y desconectamos de stock las mismas
   case 1:
-    EXEC SQL INSERT INTO venta(valor) VALUES (:precioTotal);
-    EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_articulo;
-    EXEC SQL INSERT INTO ventaarticulo (idventa, idarticulo, cantidad) VALUES (:id_venta_articulo, :idarticulo, :cantidadVenta);
-    EXEC SQL COMMIT;
+    EXEC SQL INSERT INTO venta(valor) VALUES (:precioTotal); // 🛑
+    EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_articulo; // 🛑
+    EXEC SQL INSERT INTO ventaarticulo (idventa, idarticulo, cantidad) VALUES (:id_venta_articulo, :idarticulo, :cantidadVenta); // 🛑
+    EXEC SQL COMMIT;// 🛑
     desconectar();
     return 0;
     break;
+    // De ser necesario, cancelamos la operacion
   case 2:
     printf("\n\nSE CANCELA LA VENTA\n");
     esperarEnter();
@@ -261,11 +306,14 @@ int ventaArticulo(){
   }
 }
 
+// Funcion que permite el realizar la reposición de artículos, esta puede ser llamada ya con el id del articulo a reponer como parametro
+// en caso de no ser asi sellama con un -1 (cialquier numero negativo) como parametro y esta ya pedira el id dentro de la funcion 
 int registroReposicion(int OptId){
   int idarticulo = -1, precioTotal, cant;
   bool validId = false;
   conectar();
   clearS();
+  // Pedimos el id del articulo a reponer en caso de ser necesario 
   if (OptId < 0){
     do
     {
@@ -328,6 +376,7 @@ int registroReposicion(int OptId){
 
 }
 
+// Funcion que nos permite el crear articulos (dar de alta)
 int altaArticulo(){
   int idarticulo;
   char articulo_nombre[50];
@@ -416,6 +465,7 @@ int altaArticulo(){
   }
 }
 
+// Funcion que nos permite el obtener el total recaudado en un mes / año.
 int consultarVentas(){
   int foo;
   int anio = 0;
@@ -464,16 +514,14 @@ int menu() {
     int opcion;
     clearS();
     while (1) {
-        printf("******************************\n");
-        printf("\tMENU PRINCIPAL\n");
-        printf("******************************\n\n");
+        printf("MENU\n");
         printf("1. Venta de entradas\n");
         printf("2. Venta de artículos\n");
         printf("3. Crear articulos\n");
         printf("4. Realizar resposición de artículos\n");
-        printf("5. Obtener el total recaudado (mes/año)\n");
+        printf("5. Obtener el total recaudado (mes o año)\n");
         printf("0. Salir\n");
-        printf("\n\t--> Ingrese su opción: ");
+        printf("\nIngrese su opción: ");
         scanf("%d", &opcion);
 
         switch (opcion) {
@@ -497,15 +545,14 @@ int menu() {
                 consultarVentas();
                 clearS();
                 break;    
-            case 0: 
-                printf("\nSaliendo del programa...\n\n");
-                return 0;
             default:
-                clearS();
-                printf("\nLa opción que ingreso es invalidad. Por favor, intente de nuevo.\n");                       
+                printf("\tOpción inválida. Por favor, seleccione una opción válida.\n");
+                
         }
+
         printf("\n");
+        clearS();
     }
+
     return 0;
 }
-
