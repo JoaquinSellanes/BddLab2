@@ -133,6 +133,10 @@ BEGIN
 	AND EXTRACT(YEAR FROM fecha) = anio	
 	AND valor != 0;
 
+	IF foo IS NULL THEN 
+		RETURN 0;
+	END IF;
+
 RETURN foo;
 END;
 $$ LANGUAGE plpgsql;
