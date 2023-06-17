@@ -12,7 +12,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 char articulo_nombre[50];
 char articulo_desc[100];
 int id_venta_enterada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
-id_venta_articulo, cant, mes, anio;
+id_venta_articulo, cant, mes, anio, confValue;
 bool valido, validId, validCant;
 EXEC SQL END DECLARE SECTION;
 
@@ -160,9 +160,10 @@ int ventaEntrada(){
     if (opcion == 1)
     {  
       // Creamos el registro de venta y venta entrada para un visitantemenor de edad
-      int id_venta_enterada;
+      int id_venta_enterada, confValue;
       conectar();
-      EXEC SQL INSERT INTO venta DEFAULT VALUES; // 🛑
+      EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada_menor';
+      EXEC SQL INSERT INTO venta(valor) VALUES (:confValue); // 🛑
       EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada; // 🛑
       EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true); // 🛑
       EXEC SQL COMMIT; // 🛑     
@@ -176,12 +177,16 @@ int ventaEntrada(){
     // Si el visitante es mayor de edad
     if (opcion == 2)
     {
-        int id_venta_enterada, valor_entrada, val_elec;
+        int id_venta_enterada, valor_entrada, val_elec, confValue;
+        // Pedimos el precio estandar configurado en la base de datos
+        conectar();
+        EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada';
+        desconectar();
         limpiarUltimaLineas(10);
         // Pedimos que ingrese lo que se le va a cobrar al visitante
         do {
         printf("\nQue precio quiere asignarle?");
-        printf("\n\t1 - Recomendado ($350)");
+        printf("\n\t1 - Recomendado ($%d)", confValue);
         printf("\n\t2 - Otro (Ingresar)\n\n\t--> ");
         val_elec = intValido();
         if (val_elec != 1 && val_elec != 2) {
@@ -193,7 +198,7 @@ int ventaEntrada(){
         switch (val_elec)
         {
         case 1:
-            valor_entrada = 350;
+            valor_entrada = confValue;
             break;
         case 2:
             printf("\nIngrese el valor de la entrada: ");
