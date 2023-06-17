@@ -13,7 +13,7 @@ char articulo_nombre[50];
 char articulo_desc[100];
 int id_venta_enterada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
 id_venta_articulo, cant, mes, anio, confValue;
-bool valido, validId, validCant;
+bool valido, validId, validCant, esMenor;
 EXEC SQL END DECLARE SECTION;
 
 // --------------------------------------------------------------------------------------------------------
@@ -140,6 +140,7 @@ void titleConsultaVentas(){
 
 // Funcion que permite la venta de entradas incluyendo el registro del artículo de regalo
 int ventaEntrada(){
+    bool esMenor = false;
     clearS();
     titleVentaEntrada();
 
@@ -157,26 +158,12 @@ int ventaEntrada(){
     } while (opcion != 1 && opcion != 2);
 
     // Si el visitante es menor de edad
-    if (opcion == 1)
-    {  
-      // Creamos el registro de venta y venta entrada para un visitantemenor de edad
-      int id_venta_enterada, confValue;
-      conectar();
-      EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada_menor';
-      EXEC SQL INSERT INTO venta(valor) VALUES (:confValue); // 🛑
-      EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada; // 🛑
-      EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, true); // 🛑
-      EXEC SQL COMMIT; // 🛑     
-      desconectar();
-      printf("\n\nEntrada registrada correctamente.");
-      printf("\n----------------------------------------------------------");
-      esperarEnter();
-      clearS();
+    if (opcion == 1) {
+      esMenor = true;
     }
 
     // Si el visitante es mayor de edad
-    if (opcion == 2)
-    {
+    if (opcion == 2) {
         int id_venta_enterada, valor_entrada, val_elec, confValue;
         // Pedimos el precio estandar configurado en la base de datos
         conectar();
@@ -195,8 +182,7 @@ int ventaEntrada(){
         }
         } while (val_elec != 1 && val_elec != 2);
 
-        switch (val_elec)
-        {
+        switch (val_elec) {
         case 1:
             valor_entrada = confValue;
             break;
@@ -208,10 +194,7 @@ int ventaEntrada(){
         }
         // Una vez con el valor a combrar procedemos a realizar la operaciones necesarias para registrar la venta y la venta entrada
         conectar();
-        EXEC SQL INSERT INTO venta(valor) VALUES (:valor_entrada);
-        EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_enterada;
-        EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_enterada, false);
-        EXEC SQL COMMIT;
+        EXEC SQL SELECT SP_VEntrada(:valor_entrada, :esMenor);
         desconectar();
         printf("\n\nEntrada registrada correctamente.");
         printf("\n----------------------------------------------------------");
