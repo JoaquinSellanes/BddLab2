@@ -20,6 +20,23 @@ EXECUTE FUNCTION SP_Entradas();
 
 ---------------------------------------------------------------------------------------
 
+CREATE OR REPLACE FUNCTION SP_VEntrada(precio integer, menor bool) RETURNS VOID AS $$
+DECLARE
+    idVenta integer;
+    valorMenor integer;
+BEGIN
+	SELECT valor_i into valorMenor FROM config WHERE elemento = 'valor_entrada_menor';
+	IF menor THEN
+		precio = valorMenor;
+	END IF;	
+    INSERT INTO venta(valor) values (precio);
+    SELECT currval('venta_id_seq') INTO idVenta; 
+    INSERT INTO ventaentrada(idventa, esmenor) VALUES (idVenta, menor);
+END;
+$$ LANGUAGE plpgsql;
+
+---------------------------------------------------------------------------------------
+
 CREATE OR REPLACE FUNCTION SP_VArticulos() RETURNS TRIGGER AS $$
 BEGIN
 	UPDATE stock
