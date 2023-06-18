@@ -23,7 +23,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER TR_VEntrada
 BEFORE INSERT ON ventaentrada
 FOR EACH ROW
-EXECUTE PROCEDURE TR_VEntrada;
+EXECUTE PROCEDURE SP_VEntrada();
 
 ---------------------------------------------------------------------------------------
 
