@@ -20,18 +20,21 @@ EXECUTE FUNCTION SP_Entradas();
 
 ---------------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION SP_VEntrada(precio integer, menor bool) RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION SP_VEntrada(precio integer, menor integer) RETURNS VOID AS $$
 DECLARE
     idVenta integer;
     valorMenor integer;
+	foo boolean;
 BEGIN
+	foo := 0 != menor;
 	SELECT valor_i into valorMenor FROM config WHERE elemento = 'valor_entrada_menor';
-	IF menor THEN
+	IF foo THEN
 		precio = valorMenor;
 	END IF;	
     INSERT INTO venta(valor) values (precio);
     SELECT currval('venta_id_seq') INTO idVenta; 
-    INSERT INTO ventaentrada(idventa, esmenor) VALUES (idVenta, menor);
+    INSERT INTO ventaentrada(idventa, esmenor) VALUES (idVenta, foo);
+	COMMIT;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -159,3 +162,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 ---------------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION SP_VEntrada() RETURNS TRIGGER AS $$
+DECLARE
+	idventa integer;
+    precio integer := 0;
+BEGIN
+	idventa = NEW.idventa;
+	IF NEW.esmenor THEN
+		SELECT valor_i INTO precio FROM config WHERE elemento = 'valor_entrada_menor';
+	ELSE
+		SELECT valor_i INTO precio FROM config WHERE elemento = 'valor_entrada';
+	END IF;
+
+	INSERT INTO venta(id, valor) VALUES (idventa, precio);
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER TR_VEntrada
+BEFORE INSERT ON ventaentrada
+FOR EACH ROW
+EXECUTE PROCEDURE TR_VEntrada;

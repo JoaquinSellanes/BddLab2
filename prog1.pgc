@@ -11,9 +11,9 @@
 EXEC SQL BEGIN DECLARE SECTION;
 char articulo_nombre[50];
 char articulo_desc[100];
-int id_venta_enterada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
+int id_venta_entrada, valor_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal,
 id_venta_articulo, cant, mes, anio, confValue;
-bool valido, validId, validCant, esMenor;
+bool valido, validId, validCant;
 EXEC SQL END DECLARE SECTION;
 
 // --------------------------------------------------------------------------------------------------------
@@ -40,11 +40,11 @@ void titleVentaArticulo();
 void titleAltaArticulo();
 void titleReposicion();
 void titleConsultaVentas();
-int ventaEntrada();                     // 🛑
+int ventaEntrada();               
 int ventaArticulo();
 int registroReposicion(int OptId);
 int altaArticulo();
-int consultarVentas();                  // 🛑
+int consultarVentas();            
 int menu();
 
 // --------------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ void titleAltaArticulo(){
 void titleReposicion(){
   printf("\n\t### REGISTRO REPOSICION ###\n----------------------------------------------------------\n");
 }
-// Titulo de la funcion Consultas de ventas 🛑🛑🛑🛑🛑🛑🛑
+// Titulo de la funcion Consultas de ventas
 void titleConsultaVentas(){
   printf("\n\t### CONSULTAR VENTAS ###\n----------------------------------------------------------\n");
 }
@@ -140,7 +140,6 @@ void titleConsultaVentas(){
 
 // Funcion que permite la venta de entradas incluyendo el registro del artículo de regalo
 int ventaEntrada(){
-    bool esMenor = false;
     clearS();
     titleVentaEntrada();
 
@@ -158,43 +157,65 @@ int ventaEntrada(){
     } while (opcion != 1 && opcion != 2);
 
     // Si el visitante es menor de edad
-    if (opcion == 1) {
-      esMenor = true;
+    if (opcion == 1)
+    {  
+      // Creamos el registro de venta y venta entrada para un visitantemenor de edad
+      int id_venta_entrada, confValue;
+      conectar();
+      EXEC SQL BEGIN TRANSACTION;
+      // EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada_menor';
+      // EXEC SQL INSERT INTO venta(valor) VALUES (:confValue); 
+      // EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_entrada; 
+      // EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true); 
+      EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
+      EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true); 
+
+      EXEC SQL COMMIT;      
+      desconectar();
+      printf("\n\nEntrada registrada correctamente.");
+      printf("\n----------------------------------------------------------");
+      esperarEnter();
+      clearS();
     }
 
     // Si el visitante es mayor de edad
-    if (opcion == 2) {
-        int id_venta_enterada, valor_entrada, val_elec, confValue;
+    if (opcion == 2)
+    {
+        int id_venta_entrada, valor_entrada, val_elec, confValue;
         // Pedimos el precio estandar configurado en la base de datos
-        conectar();
-        EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada';
-        desconectar();
-        limpiarUltimaLineas(10);
+        // conectar();
+        // EXEC SQL SELECT valor_i INTO :confValue FROM config WHERE elemento = 'valor_entrada';
+        // desconectar();
+        // limpiarUltimaLineas(10);
         // Pedimos que ingrese lo que se le va a cobrar al visitante
-        do {
-        printf("\nQue precio quiere asignarle?");
-        printf("\n\t1 - Recomendado ($%d)", confValue);
-        printf("\n\t2 - Otro (Ingresar)\n\n\t--> ");
-        val_elec = intValido();
-        if (val_elec != 1 && val_elec != 2) {
-            printf("\n\nOpción inválida. Por favor, intente nuevamente.");
-            esperarEnter();
-        }
-        } while (val_elec != 1 && val_elec != 2);
+        // do {
+        // printf("\nQue precio quiere asignarle?");
+        // printf("\n\t1 - Recomendado ($%d)", confValue);
+        // printf("\n\t2 - Otro (Ingresar)\n\n\t--> ");
+        // val_elec = intValido();
+        // if (val_elec != 1 && val_elec != 2) {
+        //     printf("\n\nOpción inválida. Por favor, intente nuevamente.");
+        //     esperarEnter();
+        // }
+        // } while (val_elec != 1 && val_elec != 2);
 
-        switch (val_elec) {
-        case 1:
-            valor_entrada = confValue;
-            break;
-        case 2:
-            printf("\nIngrese el valor de la entrada: ");
-            valor_entrada = intValido();
-        default:
-            break;
-        }
+        // switch (val_elec)
+        // {
+        // case 1:
+        //     valor_entrada = confValue;
+        //     break;
+        // case 2:
+        //     printf("\nIngrese el valor de la entrada: ");
+        //     valor_entrada = intValido();
+        // default:
+        //     break;
+        // }
         // Una vez con el valor a combrar procedemos a realizar la operaciones necesarias para registrar la venta y la venta entrada
         conectar();
-        EXEC SQL SELECT SP_VEntrada(:valor_entrada, :esMenor);
+        EXEC SQL BEGIN TRANSACTION;
+        EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
+        EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, false); 
+        EXEC SQL COMMIT;
         desconectar();
         printf("\n\nEntrada registrada correctamente.");
         printf("\n----------------------------------------------------------");
@@ -275,10 +296,10 @@ int ventaArticulo(){
   {
     // En caso de confirmal la venta registramos y desconectamos de stock las mismas
   case 1:
-    EXEC SQL INSERT INTO venta(valor) VALUES (:precioTotal); // 🛑
-    EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_articulo; // 🛑
-    EXEC SQL INSERT INTO ventaarticulo (idventa, idarticulo, cantidad) VALUES (:id_venta_articulo, :idarticulo, :cantidadVenta); // 🛑
-    EXEC SQL COMMIT;// 🛑
+    EXEC SQL INSERT INTO venta(valor) VALUES (:precioTotal);
+    EXEC SQL SELECT currval('venta_id_seq') INTO :id_venta_articulo;
+    EXEC SQL INSERT INTO ventaarticulo (idventa, idarticulo, cantidad) VALUES (:id_venta_articulo, :idarticulo, :cantidadVenta);
+    EXEC SQL COMMIT;
     desconectar();
     return 0;
     break;
