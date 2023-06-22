@@ -112,42 +112,56 @@ void title(const char* titulo) {
   printf("\n\t### %s ###\n----------------------------------------------------------\n", titulo);
 }
 
+// Funcion que lista el id y nombre de los articulos registrados en la base de datos
 void listarArticulos(){
+  // Declaramos las variables a usar en la funcion
   EXEC SQL BEGIN DECLARE SECTION;
   int tmpId;
   char tmpNombre[50];
   EXEC SQL END DECLARE SECTION;
+
+  // Declaramos el cursor
 	EXEC SQL DECLARE cursor_articulo CURSOR FOR SELECT id, nombre FROM articulo ORDER BY id;
+  // Establecemos el manejo para la condicion "Not Found"
 	EXEC SQL WHENEVER NOT FOUND DO BREAK;
+  // Abrimos el cursor
 	EXEC SQL OPEN cursor_articulo;
 
   printf("Lista de Articulos\n");
   printf("=============================================\n");
 
   while (1) {
-      EXEC SQL FETCH FROM cursor_articulo INTO :tmpId, :tmpNombre;
-      if (sqlca.sqlcode == ECPG_NOT_FOUND) {
-          break;
-      }
+    // Recuperamos los datos del cursor
+    EXEC SQL FETCH FROM cursor_articulo INTO :tmpId, :tmpNombre;
 
-      printf("\nID: %d \t-%s", tmpId, tmpNombre);
+    // En caso de no encontrar mas registros
+    if (sqlca.sqlcode == ECPG_NOT_FOUND) {
+        break;
+    }
+
+    // Imprimimos los datos recuperados
+    printf("\nID: %d \t-%s", tmpId, tmpNombre);
   }
 
   printf("\n=============================================\n");
 
+  // Cerramos el cursor
   EXEC SQL CLOSE cursor_articulo;
+  // Establecemos el manejo para la condicion "Not Found" a su estado original
   EXEC SQL WHENEVER NOT FOUND CONTINUE;
 };
 
 
-// Funcion que permite la venta de entradas incluyendo el registro del artículo de regalo
+// Funcion que permite la venta de entradas incluyendo la actualizacion del stock tanto de la entradas como del articulo de regalo
 int ventaEntrada()
 {
-  EXEC SQL BEGIN DECLARE SECTION;  
-  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
-  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
-  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+  // Establecemos el manejo de errores en la funcion
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION;  
   int id_venta_entrada;
   EXEC SQL END DECLARE SECTION;
   clearS();
@@ -168,7 +182,7 @@ int ventaEntrada()
     }
   } while (opcion != 1 && opcion != 2);
   EXEC SQL WHENEVER SQLERROR DO printf("ME CORRRRROODODODODO");
-  // EXEC SQL WHENEVER SQLERROR DO;
+  // EXEC SQL WHENEVER SQLERROR DO; ❗❗❗
   switch (opcion) {
     case 1:
       // Creamos el registro de venta y venta entrada para un visitante menor de edad
@@ -176,7 +190,7 @@ int ventaEntrada()
       EXEC SQL BEGIN TRANSACTION; 
       EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
       EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true);
-      // EXEC SQL WHENEVER SQLERROR ROLLBACK;
+      // EXEC SQL WHENEVER SQLERROR ROLLBACK; ❗❗❗
       EXEC SQL COMMIT;
       desconectar();
 
@@ -187,6 +201,7 @@ int ventaEntrada()
       break;
 
     case 2:
+      // Creamos el registro de venta y venta entrada para un visitante mayor de edad
       conectar();
       EXEC SQL BEGIN TRANSACTION;
       EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
@@ -208,15 +223,19 @@ int ventaEntrada()
 
 // Funcion que permite la venta de artículos de la tienda (tazas, lapiceras, llaveros, etc)
 int ventaArticulo(){
-  EXEC SQL BEGIN DECLARE SECTION;
+  // Establecemos el manejo de errores en la funcion
   EXEC SQL WHENEVER SQLERROR SQLPRINT;
   EXEC SQL WHENEVER SQLWARNING SQLPRINT;
   EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION;
   int idarticulo = -1, cantidadVenta = 0, precioUni = 0, precioTotal = 0, val_elec, id_venta_articulo;
   bool validCant, validId = false;
   EXEC SQL END DECLARE SECTION;
+
   conectar();
+
   // Pedimos el identificador del articulo que se quiera vender y comprobamos que este exista en nuestros registros
   do{
     clearS();
@@ -305,15 +324,19 @@ int ventaArticulo(){
 // Funcion que permite el realizar la reposición de artículos, esta puede ser llamada ya con el id del articulo a reponer como parametro
 // en caso de no ser asi sellama con un -1 (cialquier numero negativo) como parametro y esta ya pedira el id dentro de la funcion 
 int registroReposicion(int OptId){
-  EXEC SQL BEGIN DECLARE SECTION;  
+  // Establecemos el manejo de errores en la funcion
   EXEC SQL WHENEVER SQLERROR SQLPRINT;
   EXEC SQL WHENEVER SQLWARNING SQLPRINT;
   EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION;  
   int idarticulo = -1, precioTotal, cant, val_elec;
   bool validId = false;
   EXEC SQL END DECLARE SECTION;
+
   conectar();
+
   clearS();
   // Pedimos el id del articulo a reponer en caso de ser necesario y valida de que estas existan
   if (OptId < 0){
@@ -392,11 +415,13 @@ int registroReposicion(int OptId){
 
 // Funcion que nos permite el crear articulos (dar de alta)
 int altaArticulo() {
-  EXEC SQL BEGIN DECLARE SECTION;  
-  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
-  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
-  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+  // Establecemos el manejo de errores en la funcion
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION;  
   int idarticulo, precioUni = 0, val_elec;
   char articulo_nombre[50], articulo_desc[100];
   EXEC SQL END DECLARE SECTION;
@@ -514,15 +539,18 @@ int altaArticulo() {
 
 // Funcion que nos permite el obtener el total recaudado en un mes / año.
 int consultarVentas(){
-  EXEC SQL BEGIN DECLARE SECTION;  
+  // Establecemos el manejo de errores en la funcion
   EXEC SQL WHENEVER SQLERROR SQLPRINT;
   EXEC SQL WHENEVER SQLWARNING SQLPRINT;
   EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION;  
   int foo;
   int anio = 0;
   int mes = 0;
   EXEC SQL END DECLARE SECTION;
+
   clearS();
 
   // Pedimos el año en el cual queremos consultar el total de ventas
@@ -573,11 +601,13 @@ int consultarVentas(){
 
 // Funcion (fuera de alcance) la cual permite modificar los precios de las entradas, tanto de mayores de edad como menores
 int configPrecios(){
-  EXEC SQL BEGIN DECLARE SECTION; 
+  // Establecemos el manejo de errores en la funcion
   EXEC SQL WHENEVER SQLERROR SQLPRINT;
   EXEC SQL WHENEVER SQLWARNING SQLPRINT;
   EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
+  // Declaramos las variables a usar en la funcion
+  EXEC SQL BEGIN DECLARE SECTION; 
   int actualPrecio, actualPrecioMenor, newValue, val_elec;
   EXEC SQL END DECLARE SECTION;
   clearS();
