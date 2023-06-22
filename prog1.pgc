@@ -11,8 +11,9 @@
 
 EXEC SQL BEGIN DECLARE SECTION;
 char articulo_nombre[50];
+char tmpNombre[50];
 char articulo_desc[100];
-int id_venta_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal, id_venta_articulo, cant, mes, anio, actualPrecio, actualPrecioMenor, newValue;
+int tmpId, id_venta_entrada, foo, val_elec, idarticulo, cantidadVenta, precioUni, precioTotal, id_venta_articulo, cant, mes, anio, actualPrecio, actualPrecioMenor, newValue;
 bool valido, validId, validCant;
 EXEC SQL END DECLARE SECTION;
 
@@ -35,6 +36,7 @@ void title(const char* titulo);
 void conectar();
 void desconectar();
 void esperarEnter();
+void listarArticulos();
 int intValido();
 int ventaEntrada();               
 int ventaArticulo();
@@ -118,6 +120,30 @@ void title(const char* titulo) {
   printf("\n\t### %s ###\n----------------------------------------------------------\n", titulo);
 }
 
+void listarArticulos(){
+	EXEC SQL DECLARE cursor_articulo CURSOR FOR SELECT id, nombre FROM articulo ORDER BY id;
+	EXEC SQL WHENEVER NOT FOUND DO BREAK;
+	EXEC SQL OPEN cursor_articulo;
+
+  printf("Lista de Articulos\n");
+  printf("=============================================\n");
+
+  while (1) {
+      EXEC SQL FETCH FROM cursor_articulo INTO :tmpId, :tmpNombre;
+      if (sqlca.sqlcode == ECPG_NOT_FOUND) {
+          break;
+      }
+
+      printf("\nID: %d \t-%s", tmpId, tmpNombre);
+  }
+
+  printf("\n=============================================\n");
+
+  EXEC SQL CLOSE cursor_articulo;
+  EXEC SQL WHENEVER NOT FOUND CONTINUE;
+};
+
+
 // Funcion que permite la venta de entradas incluyendo el registro del artículo de regalo
 int ventaEntrada()
 {
@@ -182,9 +208,10 @@ int ventaArticulo(){
   bool validCant, validId = false;
 
   conectar();
-  clearS();
   // Pedimos el identificador del articulo que se quiera vender y comprobamos que este exista en nuestros registros
   do{
+    clearS();
+    listarArticulos();
     title("VENTA ARTICULO");
     if (idarticulo != -1){
       clearS();
