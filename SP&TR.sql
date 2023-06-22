@@ -32,12 +32,27 @@ CREATE OR REPLACE FUNCTION SP_Entradas() RETURNS TRIGGER AS $$
 DECLARE
     idEntrada integer;
     idRegalo integer;
+    stockRegalo integer;
+    stockEntrada integer;
 BEGIN
 	SELECT valor_i INTO idEntrada FROM config WHERE elemento = 'id_entrada';
 	SELECT valor_i INTO idRegalo FROM config WHERE elemento = 'id_regalo_entrada';
-	UPDATE stock
-	SET stock = stock - 1
-	WHERE idarticulo in (idEntrada, idRegalo);
+	SELECT stock INTO stockEntrada FROM stock WHERE idarticulo = idEntrada; 
+	SELECT stock INTO stockRegalo FROM stock WHERE idarticulo = idRegalo;
+
+	IF stockRegalo = 0 THEN
+		RAISE WARNING 'No hay stock de regalos.';
+	ELSE
+		UPDATE stock SET stock = stock - 1 WHERE idarticulo = idRegalo;
+	END IF;
+
+	IF stockEntrada = 0 THEN
+		ROLLBACK;
+		RAISE EXCEPTION 'No hay stock de entradas.';
+	END IF;
+
+	UPDATE stock SET stock = stock - 1 WHERE idarticulo = idEntrada;
+	-- Excepción en caso que no haya stock de entrada. Warning en caso de que no haya stock de regalo.
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -70,6 +85,7 @@ EXECUTE FUNCTION SP_VArticulos();
 -- Trigger que al crear un nuevo articulo este crea un nuevo registro de "stock" y lo setea en 0
 CREATE OR REPLACE FUNCTION SP_AStock() RETURNS TRIGGER AS $$
 BEGIN
+
 	INSERT INTO stock(idarticulo, stock) VALUES (NEW.id, 0);
 	RETURN NEW;
 END;
@@ -85,6 +101,9 @@ EXECUTE FUNCTION SP_AStock();
 -- Trigger que al registrar una reposicion esta le suma la cantidad adquirida al articulo correspondiente
 CREATE OR REPLACE FUNCTION SP_ActualizarStock() RETURNS TRIGGER AS $$
 BEGIN
+
+	-- Validar que el id del articulo exista en stock.
+
 	UPDATE stock
 	SET stock = stock + NEW.cantidad
 	WHERE idarticulo = NEW.idarticulo;

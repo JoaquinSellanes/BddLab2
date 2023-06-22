@@ -9,9 +9,9 @@
 //            CAPTURA DE ERRORES SQL
 // --------------------------------------------------------------------------------------------------------
 
-EXEC SQL WHENEVER SQLERROR SQLPRINT;
-EXEC SQL WHENEVER SQLWARNING SQLPRINT;
-EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+// EXEC SQL WHENEVER SQLERROR SQLPRINT;
+// EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+// EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
 // --------------------------------------------------------------------------------------------------------
 //            FIRMAS
@@ -53,6 +53,10 @@ int main(){
 
 // Funcion para conectar conla base de datos.
 void conectar(){
+  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
 }
 
@@ -140,6 +144,10 @@ void listarArticulos(){
 int ventaEntrada()
 {
   EXEC SQL BEGIN DECLARE SECTION;  
+  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int id_venta_entrada;
   EXEC SQL END DECLARE SECTION;
   clearS();
@@ -159,15 +167,17 @@ int ventaEntrada()
       esperarEnter();
     }
   } while (opcion != 1 && opcion != 2);
-
+  EXEC SQL WHENEVER SQLERROR DO printf("ME CORRRRROODODODODO");
+  // EXEC SQL WHENEVER SQLERROR DO;
   switch (opcion) {
     case 1:
       // Creamos el registro de venta y venta entrada para un visitante menor de edad
       conectar();
       EXEC SQL BEGIN TRANSACTION; 
       EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
-      EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true); 
-      EXEC SQL COMMIT;      
+      EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true);
+      // EXEC SQL WHENEVER SQLERROR ROLLBACK;
+      EXEC SQL COMMIT;
       desconectar();
 
       printf("\n\nEntrada registrada correctamente.");
@@ -199,6 +209,10 @@ int ventaEntrada()
 // Funcion que permite la venta de artículos de la tienda (tazas, lapiceras, llaveros, etc)
 int ventaArticulo(){
   EXEC SQL BEGIN DECLARE SECTION;
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int idarticulo = -1, cantidadVenta = 0, precioUni = 0, precioTotal = 0, val_elec, id_venta_articulo;
   bool validCant, validId = false;
   EXEC SQL END DECLARE SECTION;
@@ -292,6 +306,10 @@ int ventaArticulo(){
 // en caso de no ser asi sellama con un -1 (cialquier numero negativo) como parametro y esta ya pedira el id dentro de la funcion 
 int registroReposicion(int OptId){
   EXEC SQL BEGIN DECLARE SECTION;  
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int idarticulo = -1, precioTotal, cant, val_elec;
   bool validId = false;
   EXEC SQL END DECLARE SECTION;
@@ -375,6 +393,10 @@ int registroReposicion(int OptId){
 // Funcion que nos permite el crear articulos (dar de alta)
 int altaArticulo() {
   EXEC SQL BEGIN DECLARE SECTION;  
+  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int idarticulo, precioUni = 0, val_elec;
   char articulo_nombre[50], articulo_desc[100];
   EXEC SQL END DECLARE SECTION;
@@ -493,6 +515,10 @@ int altaArticulo() {
 // Funcion que nos permite el obtener el total recaudado en un mes / año.
 int consultarVentas(){
   EXEC SQL BEGIN DECLARE SECTION;  
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int foo;
   int anio = 0;
   int mes = 0;
@@ -548,6 +574,10 @@ int consultarVentas(){
 // Funcion (fuera de alcance) la cual permite modificar los precios de las entradas, tanto de mayores de edad como menores
 int configPrecios(){
   EXEC SQL BEGIN DECLARE SECTION; 
+  EXEC SQL WHENEVER SQLERROR SQLPRINT;
+  EXEC SQL WHENEVER SQLWARNING SQLPRINT;
+  EXEC SQL WHENEVER NOT FOUND SQLPRINT;
+
   int actualPrecio, actualPrecioMenor, newValue, val_elec;
   EXEC SQL END DECLARE SECTION;
   clearS();
