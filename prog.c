@@ -109,9 +109,9 @@ void title(const char* titulo) {
 }
 
 void listarArticulos(){
-  EXEC SQL BEGIN DECLARE SECTION;
+  EXEC SQL BEGIN DECLARE SECTION;    
   int tmpId;
-  char tmpNombre[50];
+  varchar(50) tmpNombre;
   EXEC SQL END DECLARE SECTION;
 	EXEC SQL DECLARE cursor_articulo CURSOR FOR SELECT id, nombre FROM articulo ORDER BY id;
 	EXEC SQL WHENEVER NOT FOUND DO BREAK;
