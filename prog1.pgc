@@ -6,14 +6,6 @@
 #include <ctype.h>
 
 // --------------------------------------------------------------------------------------------------------
-//            CAPTURA DE ERRORES SQL
-// --------------------------------------------------------------------------------------------------------
-
-// EXEC SQL WHENEVER SQLERROR SQLPRINT;
-// EXEC SQL WHENEVER SQLWARNING SQLPRINT;
-// EXEC SQL WHENEVER NOT FOUND SQLPRINT;
-
-// --------------------------------------------------------------------------------------------------------
 //            FIRMAS
 // --------------------------------------------------------------------------------------------------------
 
@@ -53,10 +45,6 @@ int main(){
 
 // Funcion para conectar conla base de datos.
 void conectar(){
-  // EXEC SQL WHENEVER SQLERROR SQLPRINT;
-  // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
-  // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
-
   EXEC SQL BEGIN DECLARE SECTION;
   const char *target = "lab02@localhost:5432";
   const char *user = "ventasistema";
@@ -64,7 +52,6 @@ void conectar(){
   EXEC SQL END DECLARE SECTION;
 
   EXEC SQL CONNECT TO :target USER :user USING :passwd;
-  /* or EXEC SQL CONNECT TO :target USER :user/:passwd; */
 }
 
 // Funcion para desconectar todas las conecciones conla base de datos.
@@ -188,8 +175,6 @@ int ventaEntrada()
       esperarEnter();
     }
   } while (opcion != 1 && opcion != 2);
-  EXEC SQL WHENEVER SQLERROR DO printf("ME CORRRRROODODODODO");
-  // EXEC SQL WHENEVER SQLERROR DO; ❗❗❗
   switch (opcion) {
     case 1:
       // Creamos el registro de venta y venta entrada para un visitante menor de edad
@@ -197,7 +182,6 @@ int ventaEntrada()
       EXEC SQL BEGIN TRANSACTION; 
       EXEC SQL SELECT nextval('venta_id_seq') INTO :id_venta_entrada;
       EXEC SQL INSERT INTO ventaentrada (idventa, esmenor) VALUES (:id_venta_entrada, true);
-      // EXEC SQL WHENEVER SQLERROR ROLLBACK; ❗❗❗
       EXEC SQL COMMIT;
       desconectar();
 
