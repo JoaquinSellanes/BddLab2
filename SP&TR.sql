@@ -30,14 +30,10 @@ EXECUTE PROCEDURE SP_VEntrada();
 -- Trigger que se ejecuta despues de insertar un nuevo registro en "ventaentrada" el cual descuenta el stock de los tickets y regalos de entrada
 CREATE OR REPLACE FUNCTION SP_Entradas() RETURNS TRIGGER AS $$
 DECLARE
-    idEntrada integer;
     idRegalo integer;
     stockRegalo integer;
-    stockEntrada integer;
 BEGIN
-	SELECT valor_i INTO idEntrada FROM config WHERE elemento = 'id_entrada';
 	SELECT valor_i INTO idRegalo FROM config WHERE elemento = 'id_regalo_entrada';
-	SELECT stock INTO stockEntrada FROM stock WHERE idarticulo = idEntrada; 
 	SELECT stock INTO stockRegalo FROM stock WHERE idarticulo = idRegalo;
 
 	IF stockRegalo = 0 THEN
@@ -45,14 +41,7 @@ BEGIN
 	ELSE
 		UPDATE stock SET stock = stock - 1 WHERE idarticulo = idRegalo;
 	END IF;
-
-	IF stockEntrada = 0 THEN
-		ROLLBACK;
-		RAISE EXCEPTION 'No hay stock de entradas.';
-	END IF;
-
-	UPDATE stock SET stock = stock - 1 WHERE idarticulo = idEntrada;
-	-- Excepción en caso que no haya stock de entrada. Warning en caso de que no haya stock de regalo.
+	
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -186,56 +175,3 @@ END;
 $$ LANGUAGE plpgsql;
 
 ---------------------------------------------------------------------------------------
-
--- NO FUNCIONA // NO SE USA ACTUALMENTE
-CREATE OR REPLACE FUNCTION SP_SetPreciosEntrada(valMay integer, valMen integer) RETURNS void AS $$
-BEGIN
-	IF valMay != 0 THEN
-		UPDATE config
-		SET valor_i = valMay
-		WHERE elemento = 'valor_entrada';
-	END IF;
-
-	IF valMen != 0 THEN
-		UPDATE config
-		SET valor_i = valMen
-		WHERE elemento = 'valor_entrada_menor';
-	END IF;
-END;
-$$ LANGUAGE plpgsql;
-
----------------------------------------------------------------------------------------
-
--- NO FUNCIONA // NO SE USA ACTUALMENTE
-CREATE OR REPLACE FUNCTION SP_Reposicion(idrep integer, cant integer, precio integer) RETURNS VOID AS $$
-BEGIN
-	BEGIN TRANSACTION;
-	UPDATE stock 
-	SET stock = stock + cant
-	WHERE idarticulo = idrep;
-
-	INSERT INTO reposicion(idarticulo, costo, cantidad) VALUES (idrep, precio, cant);
-	COMMIT;
-END;
-$$ LANGUAGE plpgsql;
-
----------------------------------------------------------------------------------------
-
--- NO FUNCIONA // NO SE USA ACTUALMENTE
-CREATE OR REPLACE FUNCTION SP_VEntrada(precio integer, menor integer) RETURNS VOID AS $$
-DECLARE
-    idVenta integer;
-    valorMenor integer;
-	foo boolean;
-BEGIN
-	foo := 0 != menor;
-	SELECT valor_i into valorMenor FROM config WHERE elemento = 'valor_entrada_menor';
-	IF foo THEN
-		precio = valorMenor;
-	END IF;	
-    INSERT INTO venta(valor) values (precio);
-    SELECT currval('venta_id_seq') INTO idVenta; 
-    INSERT INTO ventaentrada(idventa, esmenor) VALUES (idVenta, foo);
-	COMMIT;
-END;
-$$ LANGUAGE plpgsql;
