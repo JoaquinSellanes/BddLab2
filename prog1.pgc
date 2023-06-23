@@ -57,7 +57,14 @@ void conectar(){
   // EXEC SQL WHENEVER SQLWARNING SQLPRINT;
   // EXEC SQL WHENEVER NOT FOUND SQLPRINT;
 
-  EXEC SQL CONNECT TO lab02@localhost:5432 USER postgres;
+  EXEC SQL BEGIN DECLARE SECTION;
+  const char *target = "lab02@localhost:5432";
+  const char *user = "ventasistema";
+  const char *passwd = "aRbOliON";
+  EXEC SQL END DECLARE SECTION;
+
+  EXEC SQL CONNECT TO :target USER :user USING :passwd;
+  /* or EXEC SQL CONNECT TO :target USER :user/:passwd; */
 }
 
 // Funcion para desconectar todas las conecciones conla base de datos.
